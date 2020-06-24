@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+   <meta charset="utf-8">
+   <title>Conan: Exiles Mod Manager</title>
+   <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.2.0/css/all.css" integrity="sha384-hWVjflwFxL6sNzntih27bfxkr27PmbbK/iSvJ+a4+0owXq79v+lsFkW54bOGbiDQ" crossorigin="anonymous">
+   <link rel="stylesheet" href="/css/style.css">
+   <!--[if IE]>
+      <script src="js/html5shiv.min.js"></script>
+   <![endif]-->
+   <script src="js/jquery.3-3-1.min.js"></script>
+   <script src="js/sweetalert2.js"></script>
+   <script src="js/sortable.js"></script>
+   <script src="js/manager.js"></script>
+</head>
+<body>
+<div id="main">
+   <h1 id="enabled-h1">Mods enabled</h1>
+   <div id="mods-enabled" class="list-group">
+   </div>
+   <button id="button-save" class="button button-green">Commit changes to the modlist</button>
+   <h1 id="available-h1">Mods available (not enabled)</h1>
+   <button id="button-enable-all" class="button button-blue">Add all mods to the enabled list</button>
+   <div id="mods-available" class="list-group">
+   </div>
+   <button id="button-clear" class="button button-red">Clear the modlist</button>
+   <div id="spinner-body">
+      <img id="spinner" src="images/please-wait.svg" />
+   </div>
+</div>
+</body>
+</html>

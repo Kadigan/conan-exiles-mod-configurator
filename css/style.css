@@ -1,0 +1,171 @@
+#main {
+   max-width: 900px;
+   margin: 0 auto;
+   margin-top: 20px;
+   margin-bottom: 60px;
+}
+
+h1 {
+   margin: 0;
+   font-size: 120%;
+   width: 100%;
+   text-align: center;
+}
+
+
+.item { padding: 5px; }
+.item > * { margin: 0; padding: 0; display: inline-block; margin-left: 4px; margin-right: 4px; }
+
+#available-h1 {
+   margin-top: 40px;
+}
+
+#spinner-body {
+  background-color: rgba(0, 0, 0, 0.5);
+  z-index: 999;
+  position: fixed;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 100%;
+  display: none;
+}
+
+#spinner {
+  position: absolute;
+  left: 0;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  margin: auto;
+}
+
+.noscroll { 
+  overflow: hidden;
+}
+
+.item {
+   cursor: pointer;
+   margin: 2px;
+   border: 1px solid rgba(0, 0, 0, 0.2);
+   border-radius: 5px;
+}
+
+.item > .update-required {
+   font-weight: bold;
+   color: red;
+}
+
+.item > .item-removed {
+   color: #FFF;
+   background: #F00;
+   font-weight: bold;
+   padding: 0px 5px 0px 5px;
+}
+
+
+.sortable-ghost-red {
+   opacity: 0.3;
+   background: rgba(255, 0, 0, 0.3);
+}
+
+.sortable-ghost-green {
+   opacity: 0.3;
+   background: rgba(0, 255, 0, 0.3);
+}
+
+
+.button::-moz-focus-inner{
+  border: 0;
+  padding: 0;
+}
+
+.button{
+  display: inline-block;
+  zoom: 1;
+  padding: 6px 20px;
+  margin: 0;
+  cursor: pointer;
+  border: 1px solid #bbb;
+  overflow: visible;
+  font: bold 13px arial, helvetica, sans-serif;
+  text-decoration: none;
+  white-space: nowrap;
+  color: #555;
+  
+  background-color: #ddd;
+  background-image: -webkit-gradient(linear, left top, left bottom, from(rgba(255,255,255,1)), to(rgba(255,255,255,0)));
+  background-image: -webkit-linear-gradient(top, rgba(255,255,255,1), rgba(255,255,255,0));
+  background-image: -moz-linear-gradient(top, rgba(255,255,255,1), rgba(255,255,255,0));
+  background-image: -ms-linear-gradient(top, rgba(255,255,255,1), rgba(255,255,255,0));
+  background-image: -o-linear-gradient(top, rgba(255,255,255,1), rgba(255,255,255,0));
+  background-image: linear-gradient(top, rgba(255,255,255,1), rgba(255,255,255,0));
+  
+  -webkit-transition: background-color .2s ease-out;
+  -moz-transition: background-color .2s ease-out;
+  -ms-transition: background-color .2s ease-out;
+  -o-transition: background-color .2s ease-out;
+  transition: background-color .2s ease-out;
+  background-clip: padding-box; /* Fix bleeding */
+  -moz-border-radius: 3px;
+  -webkit-border-radius: 3px;
+  border-radius: 3px;
+  -moz-box-shadow: 0 1px 0 rgba(0, 0, 0, .3), 0 2px 2px -1px rgba(0, 0, 0, .5), 0 1px 0 rgba(255, 255, 255, .3) inset;
+  -webkit-box-shadow: 0 1px 0 rgba(0, 0, 0, .3), 0 2px 2px -1px rgba(0, 0, 0, .5), 0 1px 0 rgba(255, 255, 255, .3) inset;
+  box-shadow: 0 1px 0 rgba(0, 0, 0, .3), 0 2px 2px -1px rgba(0, 0, 0, .5), 0 1px 0 rgba(255, 255, 255, .3) inset;
+  text-shadow: 0 1px 0 rgba(255,255,255, .9);
+  
+  -webkit-touch-callout: none;
+  -webkit-user-select: none;
+  -khtml-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
+}
+
+.button:hover{
+  background-color: #eee;
+  color: #555;
+}
+
+.button:active{
+  background: #e9e9e9;
+  position: relative;
+  top: 1px;
+  text-shadow: none;
+  -moz-box-shadow: 0 1px 1px rgba(0, 0, 0, .3) inset;
+  -webkit-box-shadow: 0 1px 1px rgba(0, 0, 0, .3) inset;
+  box-shadow: 0 1px 1px rgba(0, 0, 0, .3) inset;
+}
+
+.button[disabled], .button[disabled]:hover, .button[disabled]:active{
+  border-color: #eaeaea;
+  background: #fafafa;
+  cursor: default;
+  position: static;
+  color: #999;
+  /* Usually, !important should be avoided but here it's really needed :) */
+  -moz-box-shadow: none !important;
+  -webkit-box-shadow: none !important;
+  box-shadow: none !important;
+  text-shadow: none !important;
+}
+
+.button {
+   width: 100%;
+   margin: 10px 0 10px 0;
+   height: 40px;
+}
+
+.button-red, .button-red:hover {
+  color: rgb(255, 0, 0);
+}
+
+.button-blue, .button-blue:hover {
+  color: rgb(0, 0, 255);
+}
+
+.button-green, .button-green:hover {
+  color: rgb(0, 180, 0);
+  font-weight: bold;
+}
