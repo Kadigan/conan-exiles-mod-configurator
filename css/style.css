@@ -169,3 +169,7 @@ h1 {
   color: rgb(0, 180, 0);
   font-weight: bold;
 }
+
+.item-last-updated {
+  font-size: 70%;
+}
