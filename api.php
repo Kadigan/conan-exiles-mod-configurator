@@ -23,6 +23,7 @@ function fatal($msg){ fatalError($msg); }
 define("MOD_FOREIGN", 255); // any type of mod not specified otherwise
 define("MOD_STEAM",   1);
 
+
 function readMods(){
    $Mods    = [];
    global $ModsDir;
@@ -33,7 +34,7 @@ function readMods(){
       if ( !is_dir($fp) )
          continue;
 
-      $mod = ['id' => $entry, 'type' => MOD_FOREIGN, 'pak_name' => "", 'mod_time' => 0];
+      $mod = ['id' => $entry, 'type' => MOD_FOREIGN, 'pak_name' => "", 'mod_time' => 0, 'mod_time_hr' => date("Y-m-d", 0)];
       if ( is_numeric($entry) ){
          // we assume it's a STEAM MOD ID
          $mod['type']            = MOD_STEAM;
@@ -63,8 +64,9 @@ function readMods(){
       if ( sizeof($entries) > 1 )
          fatal("Mod entry '{$mod['id']}' doesn't contain exactly ONE .pak file");
 
-      $mod['pak_name'] = $entries[0][0];
-      $mod['mod_time'] = $entries[0][1];
+      $mod['pak_name']    = $entries[0][0];
+      $mod['mod_time']    = $entries[0][1];
+      $mod['mod_time_hr'] = date("Y-m-d", $mod['mod_time']);
 
       // if all is well, add the mod to the list
       $Mods[$mod['id']] = $mod;
@@ -73,45 +75,13 @@ function readMods(){
    }
 
    if ( sizeof($steamApiMods) ){
-      $info = fetchModInfo($steamApiMods);
-      foreach($info as $modID => $modData) $Mods[$modID] = $modData;
-   }
-
-   return $Mods;
-}
-
-function fetchModInfo($Mods){
-   $SteamAPIFileIDs = [];
-   foreach($Mods as $modID => $ignore)
-      $SteamAPIFileIDs[] = $modID;
-
-   require_once("./SteamAPI.php");
-   $SteamAPIResult = makeSteamAPIRequest("/ISteamRemoteStorage/GetPublishedFileDetails/v1/", "POST",
-                                        ['itemcount' => sizeof($SteamAPIFileIDs), 'publishedfileids' => $SteamAPIFileIDs]);
-
-   $Response = $SteamAPIResult->response;
-   $RequestedMods = $SteamAPIFileIDs;
-   if ( $Response->result == k_EResultOK ){
-      // response OK
-      foreach($Response->publishedfiledetails as $ModEntry){
-         $modID    = $ModEntry->publishedfileid;
-         $modState = $ModEntry->result;
-         $modLastModDate = $ModEntry->time_updated;
-
-         if ( !isset($Mods[$modID]) ){
-            fatal("Received state for ID '{$modID}' which doesn't appear to be installed");
-         }
-
-         $Mods[$modID]['steam_state']   = $modState;
-         $Mods[$modID]['steam_updated'] = $modLastModDate;
-         $Mods[$modID]['steam_name']    = $ModEntry->title;
-         $Mods[$modID]['update_required'] = 0;
-         if ( $Mods[$modID]['mod_time'] < $modLastModDate )
-            $Mods[$modID]['update_required'] = 1;
-         unset($RequestedMods[array_search($modID, $RequestedMods)]);
+      require_once("./SteamAPI.php");
+      try {
+         $info = SteamAPI::fetchModInfo($steamApiMods);
+         foreach($info as $modID => $modData) $Mods[$modID] = $modData;
+      } catch ( Exception $e ){
+         fatal($e->getMessage());
       }
-   } else {
-      fatal("STEAM responded with error");
    }
 
    return $Mods;
