@@ -12,3 +12,7 @@ The manager includes code to access the STEAM API, specifically to check last-mo
 `/Mods/1125427722/LitManItemStackAndContainerSize.pak`
 
 **The script relies on these workshop ItemIDs to fetch data about them.**
+
+-------------------------------
+
+**Update 2020/11/08**: added the display of last-updated information.
