@@ -1,56 +1,121 @@
 <?php
-function makeSteamAPIRequest($url, $method = "GET", $params = []){
-   $queryData = [];
-   foreach($params as $paramName => $param){
-      if ( is_array($param) ){
-         $queryParam = [];
-         $i = 0;
-         foreach($param as $entry)
-            $queryParam[] = $paramName."[".($i++)."]=".$entry;
-         $queryData[] = implode("&", $queryParam);
-         unset($i);
-      } else {
-         $queryData[] = $paramName."=".$param;
+class SteamAPI {
+   private static function makeSteamAPIRequest($url, $method = "GET", $params = []){
+      $queryData = [];
+      foreach($params as $paramName => $param){
+         if ( is_array($param) ){
+            $queryParam = [];
+            $i = 0;
+            foreach($param as $entry)
+               $queryParam[] = $paramName."[".($i++)."]=".$entry;
+            $queryData[] = implode("&", $queryParam);
+            unset($i);
+         } else {
+            $queryData[] = $paramName."=".$param;
+         }
       }
+
+      if ( substr($url, 0, 1) != "/" )
+         $url = "/".$url;
+
+      $url = "https://api.steampowered.com" . $url;
+
+      if ( $method == "GET" && $queryData != "" ){
+         $url .= "?".implode("&", $queryData);
+      }
+
+      $curl = curl_init($url);
+
+      curl_setopt($curl, CURLOPT_VERBOSE, true);
+      $verbose = fopen('php://temp', 'w+');
+      curl_setopt($curl, CURLOPT_STDERR, $verbose);
+
+      curl_setopt($curl, CURLOPT_RETURNTRANSFER, true);
+      curl_setopt($curl, CURLOPT_FOLLOWLOCATION, true);
+      if ( $method == "POST" ){
+         curl_setopt($curl, CURLOPT_POST, true);
+         curl_setopt($curl, CURLOPT_POSTFIELDS, implode("&", $queryData));
+      }
+      $res = curl_exec($curl);
+
+      if ($res === FALSE) {
+         $errorInfo = [];
+         $errorInfo[] = "URL: {$url}\n";
+         ob_start(); var_dump($queryData); $errorInfo[] = ob_get_clean();
+         $errorInfo[] = sprintf("cUrl error (#%d): %s<br>\n", curl_errno($curl), htmlspecialchars(curl_error($curl)));
+         rewind($verbose);
+         $verboseLog = stream_get_contents($verbose);
+         $errorInfo[] = "Verbose information:\n<pre>" . htmlspecialchars($verboseLog) . "</pre>\n";
+         throw new Exception(implode("\r\n", $errorInfo));
+      }
+      curl_close($curl);
+
+      return json_decode($res);
    }
 
-   if ( substr($url, 0, 1) != "/" )
-      $url = "/".$url;
+   public static function fetchModInfo($Mods){
+      if ( !sizeof($Mods) )
+         throw new Exception('$Mods is empty or not set');
 
-   $url = "https://api.steampowered.com" . $url;
+      $SteamAPIFileIDs = [];
+      $modCount = sizeof($Mods);
+      foreach($Mods as $modID_A => $modID_B){
+         if ( $modID_A > $modCount ){
+            $SteamAPIFileIDs[] = $modID_A; // using associative (ModID => whatever)
+         } else if ( $modID_B > $modCount ){
+            $SteamAPIFileIDs[] = $modID_B; // not using associative, so probably (n => ModID)
+         } else {
+            throw new Exception("Unknown mod array format"); // unknown format
+         }
+      }
 
-   if ( $method == "GET" && $queryData != "" ){
-      $url .= "?".implode("&", $queryData);
+      $SteamAPIResult = self::makeSteamAPIRequest("/ISteamRemoteStorage/GetPublishedFileDetails/v1/", "POST",
+                                                 ['itemcount' => sizeof($SteamAPIFileIDs), 'publishedfileids' => $SteamAPIFileIDs]);
+
+      $Response = $SteamAPIResult->response;
+      $RequestedMods = $SteamAPIFileIDs;
+      if ( $Response->result == k_EResultOK ){
+         // response OK
+         foreach($Response->publishedfiledetails as $ModEntry){
+            $modID    = $ModEntry->publishedfileid;
+            $modState = $ModEntry->result;
+            $modLastModDate = $ModEntry->time_updated;
+
+            if ( !in_array($modID, $SteamAPIFileIDs) ){
+               throw new Exception("Received state for ID '{$modID}' which doesn't appear to be installed");
+            }
+
+            $Mods[$modID]['steam_state']      = $modState;
+            $Mods[$modID]['steam_updated']    = $modLastModDate;
+            $Mods[$modID]['steam_name']       = $ModEntry->title;
+            $Mods[$modID]['update_required']  = 0;
+            $Mods[$modID]['steam_updated_hr'] = date("Y-m-d", $Mods[$modID]['steam_updated']);
+            if ( $Mods[$modID]['mod_time'] < $modLastModDate )
+               $Mods[$modID]['update_required'] = true;
+            unset($RequestedMods[array_search($modID, $RequestedMods)]);
+         }
+      } else {
+         $constantsList = get_defined_constants(true);
+         $returnedConstantName = "(unknown)";
+         foreach($constantsList as $constantName => $constantValue){
+            if ( $constantValue == $Response->result ){
+               $returnedConstantName = $constantName;
+               break;
+            }
+         }
+         throw new Exception("STEAM responded with value different from k_EResultOK; value returned: " . $returnedConstantName);
+      }
+
+      return $Mods;
    }
-
-   $curl = curl_init($url);
-
-
-   curl_setopt($curl, CURLOPT_VERBOSE, true);
-   $verbose = fopen('php://temp', 'w+');
-   curl_setopt($curl, CURLOPT_STDERR, $verbose);
-
-   curl_setopt($curl, CURLOPT_RETURNTRANSFER, true);
-   curl_setopt($curl, CURLOPT_FOLLOWLOCATION, true);
-   if ( $method == "POST" ){
-      curl_setopt($curl, CURLOPT_POST, true);
-      curl_setopt($curl, CURLOPT_POSTFIELDS, implode("&", $queryData));
-   }
-   $res = curl_exec($curl);
-
-   if ($res === FALSE) {
-      echo "URL: {$url}\n";
-      var_dump($queryData);
-      printf("cUrl error (#%d): %s<br>\n", curl_errno($curl), htmlspecialchars(curl_error($curl)));
-      rewind($verbose);
-      $verboseLog = stream_get_contents($verbose);
-      echo "Verbose information:\n<pre>", htmlspecialchars($verboseLog), "</pre>\n";
-      die();
-   }
-   curl_close($curl);
-
-   return json_decode($res);
 }
+
+
+
+function STEAM_FetchModInfo($Mods){
+   return SteamAPI::fetchModInfo($Mods);
+}
+
 
 
 
